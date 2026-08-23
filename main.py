@@ -1,4 +1,7 @@
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 
 df = pd.read_csv("data/raw/bank-additional-full.csv", sep=";")
 
@@ -68,4 +71,93 @@ print(df.duplicated().sum())
 # print("Duration == 0:", (df["duration"] == 0).sum()) # 4 rows need to see these maybe never contacted
 
 df["previously_contacted"] = (df["pdays"] != 999).astype(int)
-print(df["previously_contacted"].value_counts())
+# print(df["previously_contacted"].value_counts())
+
+# so we understood that uration is of current call and we cant use it as a feature to train model
+# also pdays has 999 values as default rather we create a col days_since_contact and keep 999 as Nan
+df["days_since_contact"] = df["pdays"].replace(999, np.nan)
+df = df.drop(columns=["pdays", "duration"])
+
+print(df.shape)
+print(df.columns.tolist())
+
+# now split x and y
+X = df.drop(columns=["y"])
+y = df["y"]
+
+# print("X shape:", X.shape)
+# print("y shape:", y.shape)
+#
+# print("\nX columns:")
+# print(X.columns.tolist())
+#
+# print("\ny values:")
+# print(y.value_counts()) # gives count of no and yes in y col
+
+# print(X.dtypes)
+
+# split the data into test and train
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2, # tells 20% test size
+    random_state=42, # this will give fixed set each time without this code will give diff y_Test each time
+    stratify=y # this helps to preserve the distribution in y_test and y_train as original y
+)
+
+# print("X_train:", X_train.shape)
+# print("X_test :", X_test.shape)
+#
+# print("\ny_train distribution:")
+# print(y_train.value_counts(normalize=True)) # normalize will give values with percentage rather than just counts
+#
+# print("\ny_test distribution:")
+# print(y_test.value_counts(normalize=True))
+
+categorical_columns = X_train.select_dtypes(include="object").columns
+
+# encoder helps to create cols for each value possible for that obj like following for job
+# 'job_admin.' 'job_blue-collar' 'job_entrepreneur' 'job_housemaid'
+#  'job_management' 'job_retired' 'job_self-employed' 'job_services'
+#  'job_student' 'job_technician' 'job_unemployed' 'job_unknown'
+encoder = OneHotEncoder(
+    handle_unknown="ignore", # this will hlp to avoid error it test has some unknown category from train
+    sparse_output=False # there is sparse matrix generation and we dont want it rn
+)
+
+encoder.fit(X_train[categorical_columns])
+
+X_train_encoded = encoder.transform(X_train[categorical_columns])
+X_test_encoded = encoder.transform(X_test[categorical_columns])
+
+# print("Encoded train shape:", X_train_encoded.shape)
+
+encoded_feature_names = encoder.get_feature_names_out(categorical_columns)
+
+# print("\nEncoded features:")
+# print(encoded_feature_names)
+
+# print("\nNumber of encoded features:", len(encoded_feature_names))
+
+# working on other columns now...
+numerical_cols = X_train.select_dtypes(exclude="object").columns
+# print("Numerical columns:")
+# print(numerical_cols)
+
+# extract numeric data
+X_train_numeric = X_train[numerical_cols]
+X_test_numeric = X_test[numerical_cols]
+
+# print(X_train_numeric.shape)
+# print(X_test_numeric.shape)
+
+# now we create combined numeric and encoded cols (hstack is kinda horizontal stack)
+# creates one final feature matrix
+X_train_final = np.hstack([X_train_numeric, X_train_encoded])
+X_test_final = np.hstack([X_test_numeric, X_test_encoded])
+
+print(X_train_final.shape)
+print(X_test_final.shape)
+
+print(df["days_since_contact"])
