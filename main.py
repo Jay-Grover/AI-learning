@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-
+from sklearn.model_selection import train_test_split # to split data into train and test data
+from sklearn.preprocessing import OneHotEncoder # to break a string col into multiple cols
+from sklearn.impute import SimpleImputer # to fill Nan values with mean or median
+from sklearn.preprocessing import StandardScaler # to make values in standard form of mean = 0 and std = 1
+from sklearn.linear_model import LogisticRegression # import ML model
 df = pd.read_csv("data/raw/bank-additional-full.csv", sep=";")
 
 # print(df.head()) # gives a look at data
@@ -41,10 +43,10 @@ df = pd.read_csv("data/raw/bank-additional-full.csv", sep=";")
 # df.eq(df.loc[1266]) comapres each row with 1266 tuple .all asks are all columns equal for this row
 # print(df[df.eq(df.loc[1266]).all(axis=1)])  # returns the original and duplicate row
 
-print("Before:", df.shape)
+# print("Before:", df.shape)
 df = df.drop_duplicates()
-print("After:", df.shape)
-print(df.duplicated().sum())
+# print("After:", df.shape)
+# print(df.duplicated().sum())
 
 # numeric rows analysis
 # print("\nNumerical summary:")
@@ -78,8 +80,8 @@ df["previously_contacted"] = (df["pdays"] != 999).astype(int)
 df["days_since_contact"] = df["pdays"].replace(999, np.nan)
 df = df.drop(columns=["pdays", "duration"])
 
-print(df.shape)
-print(df.columns.tolist())
+# print(df.shape)
+# print(df.columns.tolist())
 
 # now split x and y
 X = df.drop(columns=["y"])
@@ -157,7 +159,63 @@ X_test_numeric = X_test[numerical_cols]
 X_train_final = np.hstack([X_train_numeric, X_train_encoded])
 X_test_final = np.hstack([X_test_numeric, X_test_encoded])
 
-print(X_train_final.shape)
-print(X_test_final.shape)
+# print(X_train_final.shape)
+# print(X_test_final.shape)
 
-print(df["days_since_contact"])
+# print(df["days_since_contact"])
+
+# now we try to remove Nan values from days_since_contact col
+imputer = SimpleImputer(strategy = "median") # we want to fill those values from medain
+imputer.fit(X_train_numeric) # we learn median only from train data but will apply those values to X(Xtrain and Xtest)
+X_train_numeric_imputed = imputer.transform(X_train_numeric)
+X_test_numeric_imputed = imputer.transform(X_test_numeric)
+
+# print("Before:")
+# print(X_train_numeric.isna().sum())
+#
+# print("\nAfter:")
+# print(np.isnan(X_train_numeric_imputed).sum())
+
+# now we try to make the numeric cols in standard form with mean = 0 and st_d = 1
+scaler = StandardScaler()
+scaler.fit(X_train_numeric_imputed)
+
+X_train_numeric_scaled = scaler.transform(X_train_numeric_imputed)
+X_test_numeric_scaled = scaler.transform(X_test_numeric_imputed)
+# Train mean:
+# [-3.14340741e-16 -1.94137359e-18  3.19248102e-17 -3.79107121e-17
+#   8.71586416e-15  3.37637224e-16 -2.74731327e-16 -6.37034782e-15
+#  -5.46820229e-17  2.93201340e-16]
+# Train std:
+# [1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]
+
+# print("Train mean:")
+# print(X_train_numeric_scaled.mean(axis=0))
+#
+# print("\nTrain std:")
+# print(X_train_numeric_scaled.std(axis=0))
+
+X_train_final = np.hstack([X_train_numeric_scaled, X_train_encoded])
+X_test_final = np.hstack([X_test_numeric_scaled, X_test_encoded])
+
+# print("Final X_test shape:", X_test_final.shape)
+# print("Final X_train shape:", X_train_final.shape)
+
+# now we try to convert y to 0 and 1
+y_train_encoded = (y_train == "yes").astype(int)
+y_test_encoded = (y_test == "yes").astype(int)
+
+# print(y_train_encoded.value_counts())
+# print(y_test_encoded.value_counts())
+
+# print("X_train:", X_train_final.shape)
+# print("X_test :", X_test_final.shape)
+#
+# print("y_train:", y_train_encoded.shape)
+# print("y_test :", y_test_encoded.shape)
+#
+# print("Missing in X_train:", np.isnan(X_train_final).sum())
+# print("Missing in X_test :", np.isnan(X_test_final).sum())
+
+# Here preprocessing of data completes and we will now try to implement a ML model on this data
+
