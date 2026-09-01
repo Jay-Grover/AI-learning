@@ -56,6 +56,8 @@ def chat(messages):
 # [
 #     {
 #         "task": "Description of task",
+        #    "format": "python" or "json" or "regex"
+            # "solution_criteria": "Key criteria for the expectedsolution for the task"
 #     },
 #     ...additional
 # ]

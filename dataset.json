@@ -1,11 +1,14 @@
 [
   {
-    "task": "Write a Python function that takes a list of AWS EC2 instance dictionaries (each containing 'InstanceId', 'State', and 'InstanceType' keys) and returns only the instances that are in the 'running' state and are of type 't3.micro' or 't3.small'."
+    "task": "Write a Python function that takes a list of AWS EC2 instance dictionaries (each containing 'InstanceId', 'State', and 'InstanceType' keys) and returns only the instances that are in the 'running' state and are of type 't3.micro' or 't3.small'.",
+    "format" : "python"
   },
   {
-    "task": "Write a JSON IAM policy document that allows an IAM role to read objects from a specific S3 bucket named 'my-data-lake-prod', list the contents of that bucket, and deny access to any object whose key starts with the prefix 'restricted/'."
+    "task": "Write a JSON IAM policy document that allows an IAM role to read objects from a specific S3 bucket named 'my-data-lake-prod', list the contents of that bucket, and deny access to any object whose key starts with the prefix 'restricted/'.",
+    "format" : "json"
   },
   {
-    "task": "Write a regular expression that matches valid AWS ARNs (Amazon Resource Names) following the format 'arn:aws:<service>:<region>:<account-id>:<resource>', where the service is any lowercase alphanumeric string with hyphens, the region is either empty or a standard AWS region like 'us-east-1', the account-id is either empty or exactly 12 digits, and the resource portion can contain any characters."
+    "task": "Write a regular expression that matches valid AWS ARNs (Amazon Resource Names) following the format 'arn:aws:<service>:<region>:<account-id>:<resource>', where the service is any lowercase alphanumeric string with hyphens, the region is either empty or a standard AWS region like 'us-east-1', the account-id is either empty or exactly 12 digits, and the resource portion can contain any characters.",
+    "format" : "regex"
   }
 ]
